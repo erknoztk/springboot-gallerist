@@ -5,22 +5,18 @@ import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Optional;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.erkanozturk.dto.CurrencyRateResponse;
-import com.erkanozturk.dto.DtoAccount;
-import com.erkanozturk.dto.DtoAddress;
-import com.erkanozturk.dto.DtoCar;
-import com.erkanozturk.dto.DtoCustomer;
-import com.erkanozturk.dto.DtoGallerist;
+
 import com.erkanozturk.dto.DtoSaledCar;
 import com.erkanozturk.dto.DtoSaledCarIU;
 import com.erkanozturk.enums.CarStatusType;
 import com.erkanozturk.exception.BaseException;
 import com.erkanozturk.exception.ErrorMessage;
 import com.erkanozturk.exception.MessageType;
+import com.erkanozturk.mapper.SaledCarMapper;
 import com.erkanozturk.model.Car;
 import com.erkanozturk.model.Customer;
 import com.erkanozturk.model.SaledCar;
@@ -48,6 +44,9 @@ public class SaledCarImpl  implements ISaledCarService{
 
           @Autowired
           private ICurrecyRateService currecyRateService;
+
+          @Autowired
+          private SaledCarMapper saledCarMapper;
 
 
           private BigDecimal remaningCustomerAmount(Customer customer, Car car){
@@ -110,9 +109,8 @@ public class SaledCarImpl  implements ISaledCarService{
 
           private SaledCar creatSaledCar(DtoSaledCarIU dtoSaledCarIU){
 
-                    SaledCar saledCar = new SaledCar();
+                    SaledCar saledCar = saledCarMapper.toModel(dtoSaledCarIU);
                     saledCar.setCreateTime(new Date());
-
                     saledCar.setCustomer(customerRepository.findById(dtoSaledCarIU.getCustomerId()).orElse(null));
                     saledCar.setGallerist(galleristRepository.findById(dtoSaledCarIU.getGalleristId()).orElse(null));
                     saledCar.setCar(carRepository.findById(dtoSaledCarIU.getCarId()).orElse(null));
@@ -149,30 +147,8 @@ public class SaledCarImpl  implements ISaledCarService{
 
           public DtoSaledCar toDTO(SaledCar saledCar){
 
-                    DtoSaledCar  dtoSaledCar = new DtoSaledCar();
-                    DtoCustomer dtoCustomer = new DtoCustomer();
-                    DtoGallerist dtoGallerist = new DtoGallerist();
-                    DtoCar dtoCar = new DtoCar();
-
-                    DtoAddress dtoCustomerAddress = new DtoAddress();
-                    DtoAddress dtoGalleristAddress = new DtoAddress();
-                    DtoAccount dtoAccount = new DtoAccount();
-                    
-                    BeanUtils.copyProperties(saledCar, dtoSaledCar);
-                    BeanUtils.copyProperties(saledCar.getCustomer(), dtoCustomer);
-                    BeanUtils.copyProperties(saledCar.getCustomer().getAddress(), dtoCustomerAddress);
-                    BeanUtils.copyProperties(saledCar.getCustomer().getAccount(), dtoAccount);
-                    dtoCustomer.setAddress(dtoCustomerAddress);
-                    dtoCustomer.setAccount(dtoAccount);
-                    BeanUtils.copyProperties(saledCar.getGallerist(), dtoGallerist);
-                    BeanUtils.copyProperties(saledCar.getGallerist().getAddress(), dtoGalleristAddress);
-                    dtoGallerist.setAddress(dtoGalleristAddress);
-                    BeanUtils.copyProperties(saledCar.getCar(), dtoCar);
-
-                    dtoSaledCar.setCustomer(dtoCustomer);
-                    dtoSaledCar.setGallerist(dtoGallerist);
-                    dtoSaledCar.setCar(dtoCar);
-                    return dtoSaledCar;
+                   
+                 return saledCarMapper.toDto(saledCar);
 
           }
 
